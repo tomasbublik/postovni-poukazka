@@ -1,0 +1,1018 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Poukazka B - castka</title>
+  <style>
+    :root {
+      --paper-w: 210mm;
+      --paper-h: 148mm;
+      --dx: 0mm;
+      --dy: 0mm;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: #f2f4f7;
+      color: #1a1f36;
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      gap: 16px;
+      padding: 16px;
+      min-height: 100vh;
+    }
+
+    .panel {
+      background: #fff;
+      border: 1px solid #d9dfeb;
+      border-radius: 12px;
+      padding: 14px;
+      align-self: start;
+      position: sticky;
+      top: 16px;
+      max-height: calc(100vh - 32px);
+      overflow: auto;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 18px;
+    }
+
+    .muted {
+      margin: 0 0 10px;
+      font-size: 12px;
+      color: #5e6781;
+    }
+
+    .grid2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    label {
+      display: block;
+      margin: 8px 0 3px;
+      font-size: 12px;
+      color: #44506a;
+      font-weight: 600;
+    }
+
+    input, select, button, textarea {
+      width: 100%;
+      padding: 8px 9px;
+      font-size: 14px;
+      border: 1px solid #cfd7e6;
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    textarea {
+      min-height: 96px;
+      resize: vertical;
+    }
+
+    .row {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    button {
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    button.primary {
+      background: #0b66ff;
+      border-color: #0b66ff;
+      color: #fff;
+    }
+
+    button.secondary {
+      background: #eef3ff;
+      border-color: #c5d6ff;
+      color: #0b3ca9;
+    }
+
+    .toggle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 8px 10px;
+      border: 1px solid #d2d9ea;
+      border-radius: 10px;
+      background: #f6f8fc;
+      font-size: 13px;
+      color: #2b3857;
+    }
+
+    .toggle:hover {
+      background: #edf2ff;
+    }
+
+    .toggle .chevron {
+      width: 0;
+      height: 0;
+      border-left: 6px solid transparent;
+      border-right: 6px solid transparent;
+      border-bottom: 8px solid #2b3857;
+      transition: transform 160ms ease;
+    }
+
+    .toggle.collapsed .chevron {
+      transform: rotate(90deg);
+    }
+
+    .segment {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .segment button {
+      padding: 6px 8px;
+      font-size: 12px;
+      border-radius: 999px;
+      border: 1px solid #cfd7e6;
+      background: #fff;
+      color: #2b3857;
+    }
+
+    .segment button.active {
+      background: #0b66ff;
+      border-color: #0b66ff;
+      color: #fff;
+    }
+
+    .suggestions {
+      margin-top: 6px;
+      border: 1px solid #d9dfeb;
+      border-radius: 8px;
+      background: #fff;
+      max-height: 160px;
+      overflow: auto;
+    }
+
+    .suggestion {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding: 6px 8px;
+      border: 0;
+      background: transparent;
+      cursor: pointer;
+      font-size: 12px;
+      text-align: left;
+      color: #1a1f36;
+    }
+
+    .suggestion:hover {
+      background: #f2f6ff;
+    }
+
+    .suggestion .psc {
+      font-family: "Courier New", Courier, monospace;
+      color: #2b3857;
+      font-weight: 700;
+    }
+
+    .section {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid #edf0f6;
+    }
+
+    .sheet-wrap {
+      overflow: auto;
+      background: #fff;
+      border: 1px solid #d9dfeb;
+      border-radius: 12px;
+      padding: 16px;
+    }
+
+    .sheet {
+      position: relative;
+      width: var(--paper-w);
+      height: var(--paper-h);
+      background: url("poukazka-b.png") no-repeat 0 0 / 100% 100%;
+      border: 1px solid #d7dde8;
+      margin: 0 auto;
+      user-select: none;
+    }
+
+    .field {
+      position: absolute;
+      transform: translate(var(--dx), var(--dy));
+      color: #000;
+      line-height: 1;
+      white-space: pre;
+    }
+
+    .amount-left {
+      font-family: Arial, sans-serif;
+      font-weight: 700;
+      text-align: right;
+    }
+
+    .recipient-left {
+      font-family: Arial, sans-serif;
+      font-weight: 600;
+      font-size: 3.8mm;
+      line-height: 6mm;
+    }
+
+    .recipient-boxed {
+      font-family: "Courier New", Courier, monospace;
+      font-weight: 700;
+      font-size: 3.8mm;
+      letter-spacing: 3mm;
+      line-height: 6mm;
+    }
+
+    .recipient-psc-left {
+      font-family: Arial, sans-serif;
+      font-weight: 700;
+      font-size: 4mm;
+    }
+
+    .recipient-psc-right {
+      font-family: "Courier New", Courier, monospace;
+      font-weight: 700;
+      font-size: 4mm;
+      letter-spacing: 4mm;
+    }
+
+    .box-group {
+      font-family: "Courier New", Courier, monospace;
+      font-weight: 700;
+      white-space: nowrap;
+      text-align: center;
+    }
+
+    .box-group .digit {
+      display: inline-block;
+      vertical-align: top;
+      text-align: center;
+    }
+
+    .debug .field {
+      background: rgba(30, 136, 229, 0.14);
+      outline: 1px dashed rgba(30, 136, 229, 0.55);
+    }
+
+    .info {
+      margin-top: 8px;
+      font-size: 12px;
+      color: #5e6781;
+    }
+
+    .warn {
+      color: #a13a00;
+      font-weight: 700;
+    }
+
+    .ok {
+      color: #176b2d;
+      font-weight: 700;
+    }
+
+    .err {
+      color: #9e1a1a;
+      font-weight: 700;
+    }
+
+    @media print {
+      body { margin: 0; background: #fff; }
+      .panel { display: none; }
+      .app { display: block; padding: 0; }
+      .sheet-wrap {
+        border: 0;
+        border-radius: 0;
+        padding: 0;
+        background: #fff;
+      }
+      .sheet {
+        border: 0;
+        margin: 0;
+      }
+      @page {
+        size: A5 landscape;
+        margin: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="panel">
+      <h1>Poukazka B - castka</h1>
+      <p class="muted">Browser-only sablona. Ted ladime castku i adresata.</p>
+
+      <label for="amountInput">Castka (napr. 1234,50)</label>
+      <input id="amountInput" value="1234,50" />
+
+      <div class="row">
+        <button type="button" class="secondary" id="preset1">34,00</button>
+        <button type="button" class="secondary" id="preset2">1234,50</button>
+        <button type="button" class="secondary" id="preset3">9999999,99</button>
+      </div>
+
+      <div class="section">
+        <label for="recipientInput">Adresat (vice radku)</label>
+        <textarea id="recipientInput" placeholder="JMENO&#10;ULICE 123&#10;MESTO"></textarea>
+
+        <label for="recipientPscInput">PSC adresata</label>
+        <input id="recipientPscInput" placeholder="12345" />
+
+        <label for="pscCityQuery">Najit PSC podle mesta</label>
+        <input id="pscCityQuery" placeholder="Zadej mesto (napr. Praha)" />
+        <div id="pscSuggestions" class="suggestions" hidden></div>
+
+        <label for="pscPresetList">Seznam mest (mesto;psc)</label>
+        <textarea id="pscPresetList" rows="5">Praha;11000
+Brno;60200
+Ostrava;70800
+Plzen;30100
+Liberec;46001</textarea>
+      </div>
+
+      <div class="section">
+        <button type="button" class="toggle" id="togglePositioning" aria-expanded="true" aria-controls="positioningControls">
+          <span>Pozicovani poli</span>
+          <span class="chevron" aria-hidden="true"></span>
+        </button>
+      </div>
+
+      <div id="positioningControls">
+        <div class="segment" role="group" aria-label="Vyber pozicovani">
+          <button type="button" id="segmentAmount" aria-pressed="true">Pozicovani castky</button>
+          <button type="button" id="segmentRecipient" aria-pressed="false">Pozicovani adresata</button>
+        </div>
+
+        <div id="positioningAmount">
+          <div class="section">
+            <div class="grid2">
+              <div>
+                <label for="paperW">Sirka mm</label>
+                <input id="paperW" type="number" step="0.1" value="210" />
+              </div>
+              <div>
+                <label for="paperH">Vyska mm</label>
+                <input id="paperH" type="number" step="0.1" value="148" />
+              </div>
+            </div>
+
+            <div class="grid2">
+              <div>
+                <label for="dx">Global X mm</label>
+                <input id="dx" type="number" step="0.1" value="0" />
+              </div>
+              <div>
+                <label for="dy">Global Y mm</label>
+                <input id="dy" type="number" step="0.1" value="0" />
+              </div>
+            </div>
+          </div>
+
+          <div class="section">
+            <label>Leva castka (Kc)</label>
+            <div class="grid2">
+              <input id="leftKcX" type="number" step="0.1" value="62.0" />
+              <input id="leftKcY" type="number" step="0.1" value="53.0" />
+            </div>
+
+            <label>Leva castka (h)</label>
+            <div class="grid2">
+              <input id="leftHX" type="number" step="0.1" value="79.8" />
+              <input id="leftHY" type="number" step="0.1" value="53.0" />
+            </div>
+
+            <label>Font leva castka (mm)</label>
+            <input id="leftFont" type="number" step="0.1" value="4.2" />
+          </div>
+
+          <div class="section">
+            <label>Prava castka - Kc (start X / Y)</label>
+            <div class="grid2">
+              <input id="rightKcX" type="number" step="0.1" value="121.9" />
+              <input id="rightKcY" type="number" step="0.1" value="6.5" />
+            </div>
+
+            <div class="grid2">
+              <div>
+                <label for="kcBoxes">Pocet boxu Kc</label>
+                <input id="kcBoxes" type="number" step="1" value="7" />
+              </div>
+              <div>
+                <label for="rightStep">Roztec boxu mm</label>
+                <input id="rightStep" type="number" step="0.1" value="5.5" />
+              </div>
+            </div>
+
+            <label>Prava castka - h (start X / Y)</label>
+            <div class="grid2">
+              <input id="rightHX" type="number" step="0.1" value="163.9" />
+              <input id="rightHY" type="number" step="0.1" value="6.5" />
+            </div>
+
+            <label>Font prava castka (mm)</label>
+            <input id="rightFont" type="number" step="0.1" value="4.4" />
+          </div>
+        </div>
+
+        <div id="positioningRecipient" hidden>
+          <div class="section">
+            <label>Adresat vlevo (X / Y)</label>
+            <div class="grid2">
+              <input id="recipientLeftX" type="number" step="0.1" value="14.1" />
+              <input id="recipientLeftY" type="number" step="0.1" value="43.1" />
+            </div>
+
+            <label>Font adresat vlevo (mm)</label>
+            <input id="recipientLeftFont" type="number" step="0.1" value="3.8" />
+
+            <label>Radkovani adresat vlevo (mm)</label>
+            <input id="recipientLeftLineHeight" type="number" step="0.1" value="6.0" />
+          </div>
+
+          <div class="section">
+            <label>Adresat vpravo boxiky (X / Y)</label>
+            <div class="grid2">
+              <input id="recipientBoxedX" type="number" step="0.1" value="109.6" />
+              <input id="recipientBoxedY" type="number" step="0.1" value="43.1" />
+            </div>
+
+            <label>Font adresat vpravo (mm)</label>
+            <input id="recipientBoxedFont" type="number" step="0.1" value="3.8" />
+
+            <label>Radkovani adresat vpravo (mm)</label>
+            <input id="recipientBoxedLineHeight" type="number" step="0.1" value="6.0" />
+
+            <label>Roztec adresat vpravo (mm)</label>
+            <input id="recipientBoxedSpacing" type="number" step="0.1" value="3.0" />
+          </div>
+
+          <div class="section">
+            <label>PSC vlevo (X / Y)</label>
+            <div class="grid2">
+              <input id="recipientPscLeftX" type="number" step="0.1" value="14.1" />
+              <input id="recipientPscLeftY" type="number" step="0.1" value="63.6" />
+            </div>
+
+            <label>Font PSC vlevo (mm)</label>
+            <input id="recipientPscLeftFont" type="number" step="0.1" value="4.0" />
+          </div>
+
+          <div class="section">
+            <label>PSC vpravo (X / Y)</label>
+            <div class="grid2">
+              <input id="recipientPscRightX" type="number" step="0.1" value="166.1" />
+              <input id="recipientPscRightY" type="number" step="0.1" value="63.6" />
+            </div>
+
+            <label>Font PSC vpravo (mm)</label>
+            <input id="recipientPscRightFont" type="number" step="0.1" value="4.0" />
+
+            <label>Roztec PSC vpravo (mm)</label>
+            <input id="recipientPscRightSpacing" type="number" step="0.1" value="4.0" />
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <label for="anchor">Kliknutim nastav pozici</label>
+        <select id="anchor">
+          <option value="">vypnuto</option>
+          <option value="leftKc">leva Kc</option>
+          <option value="leftH">leva h</option>
+          <option value="rightKc">prava Kc start</option>
+          <option value="rightH">prava h start</option>
+          <option value="recipientLeft">adresat vlevo</option>
+          <option value="recipientBoxed">adresat vpravo boxiky</option>
+          <option value="recipientPscLeft">adresat PSC vlevo</option>
+          <option value="recipientPscRight">adresat PSC vpravo</option>
+        </select>
+
+        <div class="row">
+          <button type="button" class="primary" id="printBtn">Tisk</button>
+          <button type="button" id="debugBtn">Debug</button>
+        </div>
+
+        <div class="row">
+          <button type="button" id="exportBtn">Export JSON</button>
+          <button type="button" id="importBtn">Import JSON</button>
+        </div>
+        <input id="importFile" type="file" accept="application/json,.json" style="display:none" />
+      </div>
+
+      <p class="info" id="status"></p>
+      <p class="info" id="storageStatus">Nastaveni se uklada automaticky v prohlizeci.</p>
+      <p class="info">Tip: v dialogu tisku nastav 100 % a vypni "fit to page".</p>
+    </aside>
+
+    <main class="sheet-wrap">
+      <div class="sheet" id="sheet">
+        <div class="field amount-left" id="fLeftKc"></div>
+        <div class="field amount-left" id="fLeftH"></div>
+
+        <div class="field box-group" id="fRightKc"></div>
+        <div class="field box-group" id="fRightH"></div>
+
+        <div class="field recipient-left" id="fRecipientLeft"></div>
+        <div class="field recipient-boxed" id="fRecipientBoxed"></div>
+        <div class="field recipient-psc-left" id="fRecipientPscLeft"></div>
+        <div class="field recipient-psc-right" id="fRecipientPscRight"></div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const ids = [
+      "amountInput", "recipientInput", "recipientPscInput", "pscPresetList", "paperW", "paperH", "dx", "dy",
+      "leftKcX", "leftKcY", "leftHX", "leftHY", "leftFont",
+      "rightKcX", "rightKcY", "kcBoxes", "rightStep",
+      "rightHX", "rightHY", "rightFont",
+      "recipientLeftX", "recipientLeftY",
+      "recipientLeftFont", "recipientLeftLineHeight",
+      "recipientBoxedX", "recipientBoxedY",
+      "recipientBoxedFont", "recipientBoxedLineHeight", "recipientBoxedSpacing",
+      "recipientPscLeftX", "recipientPscLeftY", "recipientPscLeftFont",
+      "recipientPscRightX", "recipientPscRightY", "recipientPscRightFont", "recipientPscRightSpacing",
+      "anchor"
+    ];
+
+    const el = {};
+    ids.forEach((id) => { el[id] = document.getElementById(id); });
+    const sheet = document.getElementById("sheet");
+    const statusEl = document.getElementById("status");
+    const storageStatusEl = document.getElementById("storageStatus");
+    const exportBtn = document.getElementById("exportBtn");
+    const importBtn = document.getElementById("importBtn");
+    const importFile = document.getElementById("importFile");
+    const togglePositioning = document.getElementById("togglePositioning");
+    const positioningControls = document.getElementById("positioningControls");
+    const segmentAmount = document.getElementById("segmentAmount");
+    const segmentRecipient = document.getElementById("segmentRecipient");
+    const positioningAmount = document.getElementById("positioningAmount");
+    const positioningRecipient = document.getElementById("positioningRecipient");
+    const pscCityQuery = document.getElementById("pscCityQuery");
+    const pscSuggestions = document.getElementById("pscSuggestions");
+
+    const STORAGE_KEY = "poukazkaB_castka_settings_v1";
+    const POSITIONING_TOGGLE_KEY = "poukazkaB_castka_positioning_open_v1";
+    const POSITIONING_SECTION_KEY = "poukazkaB_castka_positioning_section_v1";
+
+    function asNumber(input, fallback) {
+      const n = Number(input.value);
+      return Number.isFinite(n) ? n : fallback;
+    }
+
+    function setStorageStatus(message, type) {
+      storageStatusEl.textContent = message;
+      storageStatusEl.classList.remove("ok", "err");
+      if (type) storageStatusEl.classList.add(type);
+    }
+
+    function getSettingsFields() {
+      const fields = {};
+      ids.forEach((id) => { fields[id] = el[id].value; });
+      return fields;
+    }
+
+    function applySettingsFields(fields) {
+      ids.forEach((id) => {
+        if (Object.prototype.hasOwnProperty.call(fields, id)) {
+          el[id].value = String(fields[id]);
+        }
+      });
+    }
+
+    function saveSettingsToLocal() {
+      try {
+        const payload = {
+          app: "poukazka-b-castka",
+          version: 1,
+          savedAt: new Date().toISOString(),
+          fields: getSettingsFields()
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+      } catch (err) {
+        setStorageStatus("Automaticke ulozeni selhalo.", "err");
+      }
+    }
+
+    function loadSettingsFromLocal() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return false;
+        const parsed = JSON.parse(raw);
+        const fields = parsed && typeof parsed === "object" ? parsed.fields : null;
+        if (!fields || typeof fields !== "object") return false;
+        applySettingsFields(fields);
+        setStorageStatus("Nacteno z lokalniho uloziste.", "ok");
+        return true;
+      } catch (err) {
+        setStorageStatus("Nacteni z lokalniho uloziste selhalo.", "err");
+        return false;
+      }
+    }
+
+    function setPositioningOpen(isOpen) {
+      positioningControls.hidden = !isOpen;
+      togglePositioning.setAttribute("aria-expanded", String(isOpen));
+      togglePositioning.classList.toggle("collapsed", !isOpen);
+    }
+
+    function loadPositioningState() {
+      try {
+        const saved = localStorage.getItem(POSITIONING_TOGGLE_KEY);
+        if (saved === "0") {
+          setPositioningOpen(false);
+          return;
+        }
+      } catch (err) {
+        // ignore storage errors
+      }
+      setPositioningOpen(true);
+    }
+
+    function setPositioningSection(section) {
+      const isAmount = section === "amount";
+      positioningAmount.hidden = !isAmount;
+      positioningRecipient.hidden = isAmount;
+      segmentAmount.classList.toggle("active", isAmount);
+      segmentRecipient.classList.toggle("active", !isAmount);
+      segmentAmount.setAttribute("aria-pressed", String(isAmount));
+      segmentRecipient.setAttribute("aria-pressed", String(!isAmount));
+    }
+
+    function loadPositioningSection() {
+      try {
+        const saved = localStorage.getItem(POSITIONING_SECTION_KEY);
+        if (saved === "recipient") {
+          setPositioningSection("recipient");
+          return;
+        }
+      } catch (err) {
+        // ignore storage errors
+      }
+      setPositioningSection("amount");
+    }
+
+    function buildExportPayload() {
+      return {
+        app: "poukazka-b-castka",
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        fields: getSettingsFields()
+      };
+    }
+
+    function exportSettings() {
+      const payload = buildExportPayload();
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+      link.href = url;
+      link.download = "poukazka-b-castka-" + stamp + ".json";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      setStorageStatus("Nastaveni exportovano do JSON.", "ok");
+    }
+
+    function parseImportedFields(rawText) {
+      const parsed = JSON.parse(rawText);
+      if (!parsed || typeof parsed !== "object") throw new Error("Invalid JSON.");
+
+      const fields = parsed.fields && typeof parsed.fields === "object" ? parsed.fields : parsed;
+      if (!fields || typeof fields !== "object") throw new Error("Missing fields.");
+      return fields;
+    }
+
+    function importSettingsFromText(rawText) {
+      const fields = parseImportedFields(rawText);
+      applySettingsFields(fields);
+      render();
+      saveSettingsToLocal();
+      setStorageStatus("Nastaveni importovano a ulozeno.", "ok");
+    }
+
+    function parsePscPresets(rawText) {
+      const lines = String(rawText || "").split("\n");
+      const entries = [];
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed) continue;
+        const parts = trimmed.split(";");
+        if (parts.length < 2) continue;
+        const city = parts[0].trim();
+        const psc = parts.slice(1).join(";").trim().replace(/\D/g, "").slice(0, 5);
+        if (!city || !psc) continue;
+        entries.push({ city, psc, norm: city.toLowerCase() });
+      }
+      return entries;
+    }
+
+    function renderPscSuggestions() {
+      const query = String(pscCityQuery.value || "").trim().toLowerCase();
+      const entries = parsePscPresets(el.pscPresetList.value);
+
+      if (!query) {
+        pscSuggestions.hidden = true;
+        pscSuggestions.innerHTML = "";
+        return;
+      }
+
+      const matched = entries
+        .filter((item) => item.norm.includes(query))
+        .slice(0, 8);
+
+      if (!matched.length) {
+        pscSuggestions.hidden = true;
+        pscSuggestions.innerHTML = "";
+        return;
+      }
+
+      pscSuggestions.hidden = false;
+      pscSuggestions.innerHTML = matched.map((item, idx) => (
+        `<button type="button" class="suggestion" data-idx="${idx}" data-city="${item.city}" data-psc="${item.psc}">
+          <span>${item.city}</span>
+          <span class="psc">${item.psc}</span>
+        </button>`
+      )).join("");
+
+      pscSuggestions.querySelectorAll(".suggestion").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const psc = btn.getAttribute("data-psc") || "";
+          const city = btn.getAttribute("data-city") || "";
+          el.recipientPscInput.value = psc;
+          pscCityQuery.value = city;
+          render();
+          saveSettingsToLocal();
+          pscSuggestions.hidden = true;
+        });
+      });
+    }
+
+    function upperLines(s) {
+      return String(s || "").replace(/\r/g, "").toUpperCase();
+    }
+
+    function formatPlainLines(s, maxLines = 5) {
+      const lines = upperLines(s).split("\n");
+      return lines.slice(0, maxLines).join("\n");
+    }
+
+    function formatBoxedText(s, maxCharsPerLine = 30, maxLines = 5) {
+      const raw = upperLines(s).split("\n");
+      const lines = [];
+
+      for (const part of raw) {
+        if (lines.length >= maxLines) break;
+        if (!part) {
+          lines.push("");
+          continue;
+        }
+
+        let idx = 0;
+        while (idx < part.length && lines.length < maxLines) {
+          lines.push(part.slice(idx, idx + maxCharsPerLine));
+          idx += maxCharsPerLine;
+        }
+      }
+
+      return lines.join("\n");
+    }
+
+
+    function parseAmount(raw) {
+      const cleaned = String(raw || "")
+        .replace(/\s+/g, "")
+        .replace(",", ".")
+        .replace(/[^0-9.]/g, "");
+
+      if (!cleaned) return { kc: "", h: "", overflow: false };
+
+      const value = Number(cleaned);
+      if (!Number.isFinite(value)) return { kc: "", h: "", overflow: false };
+
+      const cents = Math.round(value * 100);
+      const kc = String(Math.floor(cents / 100));
+      const h = String(cents % 100).padStart(2, "0");
+      return { kc, h, overflow: false };
+    }
+
+    function padLeftDigits(s, count) {
+      const text = String(s || "");
+      if (text.length <= count) return { value: text.padStart(count, " "), overflow: false };
+      return { value: text.slice(-count), overflow: true };
+    }
+
+    function setPos(node, x, y) {
+      node.style.left = x + "mm";
+      node.style.top = y + "mm";
+    }
+
+    function renderDigitGroup(node, digits, stepMm, fontMm) {
+      node.textContent = "";
+      node.style.fontSize = fontMm + "mm";
+      for (const ch of digits) {
+        const span = document.createElement("span");
+        span.className = "digit";
+        span.style.width = stepMm + "mm";
+        span.textContent = ch === " " ? "" : ch;
+        node.appendChild(span);
+      }
+    }
+
+    function render() {
+      document.documentElement.style.setProperty("--paper-w", asNumber(el.paperW, 210) + "mm");
+      document.documentElement.style.setProperty("--paper-h", asNumber(el.paperH, 148) + "mm");
+      document.documentElement.style.setProperty("--dx", asNumber(el.dx, 0) + "mm");
+      document.documentElement.style.setProperty("--dy", asNumber(el.dy, 0) + "mm");
+
+      const amount = parseAmount(el.amountInput.value);
+      const kcBoxes = Math.max(1, Math.floor(asNumber(el.kcBoxes, 7)));
+      const padded = padLeftDigits(amount.kc, kcBoxes);
+
+      const leftFont = asNumber(el.leftFont, 4.2);
+      const rightFont = asNumber(el.rightFont, 4.4);
+      const step = asNumber(el.rightStep, 5.5);
+
+      const fLeftKc = document.getElementById("fLeftKc");
+      const fLeftH = document.getElementById("fLeftH");
+      const fRightKc = document.getElementById("fRightKc");
+      const fRightH = document.getElementById("fRightH");
+      const fRecipientLeft = document.getElementById("fRecipientLeft");
+      const fRecipientBoxed = document.getElementById("fRecipientBoxed");
+      const fRecipientPscLeft = document.getElementById("fRecipientPscLeft");
+      const fRecipientPscRight = document.getElementById("fRecipientPscRight");
+
+      setPos(fLeftKc, asNumber(el.leftKcX, 62), asNumber(el.leftKcY, 53));
+      setPos(fLeftH, asNumber(el.leftHX, 79.8), asNumber(el.leftHY, 53));
+      setPos(fRightKc, asNumber(el.rightKcX, 121.9), asNumber(el.rightKcY, 6.5));
+      setPos(fRightH, asNumber(el.rightHX, 163.9), asNumber(el.rightHY, 6.5));
+      setPos(fRecipientLeft, asNumber(el.recipientLeftX, 14.1), asNumber(el.recipientLeftY, 43.1));
+      setPos(fRecipientBoxed, asNumber(el.recipientBoxedX, 109.6), asNumber(el.recipientBoxedY, 43.1));
+      setPos(fRecipientPscLeft, asNumber(el.recipientPscLeftX, 14.1), asNumber(el.recipientPscLeftY, 63.6));
+      setPos(fRecipientPscRight, asNumber(el.recipientPscRightX, 166.1), asNumber(el.recipientPscRightY, 63.6));
+
+      fLeftKc.style.fontSize = leftFont + "mm";
+      fLeftH.style.fontSize = leftFont + "mm";
+      fLeftKc.textContent = amount.kc;
+      fLeftH.textContent = amount.h;
+
+      renderDigitGroup(fRightKc, padded.value, step, rightFont);
+      renderDigitGroup(fRightH, amount.h.padStart(2, "0"), step, rightFont);
+
+      const recipientLeftFont = asNumber(el.recipientLeftFont, 3.8);
+      const recipientLeftLineHeight = asNumber(el.recipientLeftLineHeight, 6.0);
+      const recipientBoxedFont = asNumber(el.recipientBoxedFont, 3.8);
+      const recipientBoxedLineHeight = asNumber(el.recipientBoxedLineHeight, 6.0);
+      const recipientBoxedSpacing = asNumber(el.recipientBoxedSpacing, 3.0);
+      const recipientPscLeftFont = asNumber(el.recipientPscLeftFont, 4.0);
+      const recipientPscRightFont = asNumber(el.recipientPscRightFont, 4.0);
+      const recipientPscRightSpacing = asNumber(el.recipientPscRightSpacing, 4.0);
+
+      fRecipientLeft.style.fontSize = recipientLeftFont + "mm";
+      fRecipientLeft.style.lineHeight = recipientLeftLineHeight + "mm";
+      fRecipientBoxed.style.fontSize = recipientBoxedFont + "mm";
+      fRecipientBoxed.style.lineHeight = recipientBoxedLineHeight + "mm";
+      fRecipientBoxed.style.letterSpacing = recipientBoxedSpacing + "mm";
+      fRecipientPscLeft.style.fontSize = recipientPscLeftFont + "mm";
+      fRecipientPscRight.style.fontSize = recipientPscRightFont + "mm";
+      fRecipientPscRight.style.letterSpacing = recipientPscRightSpacing + "mm";
+
+      const recipientRaw = el.recipientInput.value;
+      fRecipientLeft.textContent = formatPlainLines(recipientRaw, 5);
+      fRecipientBoxed.textContent = formatBoxedText(recipientRaw, 30, 5);
+      const recipientPsc = String(el.recipientPscInput.value || "").replace(/\D/g, "").slice(0, 5);
+      fRecipientPscLeft.textContent = recipientPsc;
+      fRecipientPscRight.textContent = recipientPsc;
+
+      if (padded.overflow) {
+        statusEl.innerHTML = "<span class='warn'>Pozor:</span> castka ma vice cifer nez pocet boxu Kc, tisknou se jen posledni cifry.";
+      } else {
+        statusEl.textContent = "";
+      }
+    }
+
+    ids.forEach((id) => {
+      el[id].addEventListener("input", () => {
+        render();
+        saveSettingsToLocal();
+      });
+    });
+    pscCityQuery.addEventListener("input", renderPscSuggestions);
+    el.pscPresetList.addEventListener("input", renderPscSuggestions);
+
+    document.getElementById("preset1").addEventListener("click", () => {
+      el.amountInput.value = "34,00";
+      render();
+      saveSettingsToLocal();
+    });
+    document.getElementById("preset2").addEventListener("click", () => {
+      el.amountInput.value = "1234,50";
+      render();
+      saveSettingsToLocal();
+    });
+    document.getElementById("preset3").addEventListener("click", () => {
+      el.amountInput.value = "9999999,99";
+      render();
+      saveSettingsToLocal();
+    });
+
+    document.getElementById("printBtn").addEventListener("click", () => window.print());
+    document.getElementById("debugBtn").addEventListener("click", () => {
+      sheet.classList.toggle("debug");
+    });
+    exportBtn.addEventListener("click", exportSettings);
+    importBtn.addEventListener("click", () => importFile.click());
+    togglePositioning.addEventListener("click", () => {
+      const nextOpen = positioningControls.hidden;
+      setPositioningOpen(nextOpen);
+      try {
+        localStorage.setItem(POSITIONING_TOGGLE_KEY, nextOpen ? "1" : "0");
+      } catch (err) {
+        // ignore storage errors
+      }
+    });
+    segmentAmount.addEventListener("click", () => {
+      setPositioningSection("amount");
+      try {
+        localStorage.setItem(POSITIONING_SECTION_KEY, "amount");
+      } catch (err) {
+        // ignore storage errors
+      }
+    });
+    segmentRecipient.addEventListener("click", () => {
+      setPositioningSection("recipient");
+      try {
+        localStorage.setItem(POSITIONING_SECTION_KEY, "recipient");
+      } catch (err) {
+        // ignore storage errors
+      }
+    });
+
+    importFile.addEventListener("change", async (event) => {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+
+      try {
+        const text = await file.text();
+        importSettingsFromText(text);
+      } catch (err) {
+        setStorageStatus("Import selhal. Zkontrolujte format JSON.", "err");
+      } finally {
+        importFile.value = "";
+      }
+    });
+
+    sheet.addEventListener("click", (event) => {
+      const target = el.anchor.value;
+      if (!target) return;
+
+      const rect = sheet.getBoundingClientRect();
+      const xMm = ((event.clientX - rect.left) / rect.width) * asNumber(el.paperW, 210);
+      const yMm = ((event.clientY - rect.top) / rect.height) * asNumber(el.paperH, 148);
+
+      const x = xMm.toFixed(2);
+      const y = yMm.toFixed(2);
+
+      if (target === "leftKc") { el.leftKcX.value = x; el.leftKcY.value = y; }
+      if (target === "leftH") { el.leftHX.value = x; el.leftHY.value = y; }
+      if (target === "rightKc") { el.rightKcX.value = x; el.rightKcY.value = y; }
+      if (target === "rightH") { el.rightHX.value = x; el.rightHY.value = y; }
+      if (target === "recipientLeft") { el.recipientLeftX.value = x; el.recipientLeftY.value = y; }
+      if (target === "recipientBoxed") { el.recipientBoxedX.value = x; el.recipientBoxedY.value = y; }
+      if (target === "recipientPscLeft") { el.recipientPscLeftX.value = x; el.recipientPscLeftY.value = y; }
+      if (target === "recipientPscRight") { el.recipientPscRightX.value = x; el.recipientPscRightY.value = y; }
+
+      render();
+      saveSettingsToLocal();
+    });
+
+    loadPositioningSection();
+    loadPositioningState();
+    loadSettingsFromLocal();
+    render();
+    saveSettingsToLocal();
+    renderPscSuggestions();
+  </script>
+</body>
+</html>
