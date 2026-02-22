@@ -3,11 +3,11 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Poukazka B - castka</title>
+  <title>Poukazka B</title>
   <style>
     :root {
       --paper-w: 210mm;
-      --paper-h: 148mm;
+      --paper-h: 105mm;
       --dx: 0mm;
       --dy: 0mm;
     }
@@ -135,7 +135,7 @@
 
     .segment {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: repeat(3, 1fr);
       gap: 8px;
       margin-top: 8px;
     }
@@ -206,10 +206,23 @@
       position: relative;
       width: var(--paper-w);
       height: var(--paper-h);
-      background: url("poukazka-b.png") no-repeat 0 0 / 100% 100%;
+      background: #fff;
       border: 1px solid #d7dde8;
       margin: 0 auto;
       user-select: none;
+      overflow: hidden;
+    }
+
+    .sheet-bg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: fill;
+      z-index: 0;
+      pointer-events: none;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
     }
 
     .field {
@@ -218,6 +231,7 @@
       color: #000;
       line-height: 1;
       white-space: pre;
+      z-index: 1;
     }
 
     .amount-left {
@@ -252,6 +266,61 @@
       font-weight: 700;
       font-size: 4mm;
       letter-spacing: 4mm;
+    }
+
+    .sender-left {
+      font-family: Arial, sans-serif;
+      font-weight: 600;
+      font-size: 3.8mm;
+      line-height: 6mm;
+    }
+
+    .sender-boxed {
+      font-family: "Courier New", Courier, monospace;
+      font-weight: 700;
+      font-size: 3.8mm;
+      letter-spacing: 3mm;
+      line-height: 6mm;
+    }
+
+    .sender-psc-left {
+      font-family: Arial, sans-serif;
+      font-weight: 700;
+      font-size: 4mm;
+    }
+
+    .sender-psc-right {
+      font-family: "Courier New", Courier, monospace;
+      font-weight: 700;
+      font-size: 4mm;
+      letter-spacing: 4mm;
+    }
+
+    .symbol-field {
+      font-family: Arial, sans-serif;
+      font-weight: 700;
+      font-size: 3.8mm;
+    }
+
+    .account-left {
+      font-family: Arial, sans-serif;
+      font-weight: 700;
+      font-size: 3.8mm;
+    }
+
+    .account-boxed {
+      font-family: "Courier New", Courier, monospace;
+      font-weight: 700;
+      font-size: 3.8mm;
+      letter-spacing: 3mm;
+    }
+
+    .message-boxed {
+      font-family: "Courier New", Courier, monospace;
+      font-weight: 700;
+      font-size: 3.8mm;
+      letter-spacing: 3mm;
+      line-height: 6mm;
     }
 
     .box-group {
@@ -302,13 +371,15 @@
         border-radius: 0;
         padding: 0;
         background: #fff;
+        display: flex;
+        justify-content: center;
       }
       .sheet {
         border: 0;
         margin: 0;
       }
       @page {
-        size: A5 landscape;
+        size: A4 portrait;
         margin: 0;
       }
     }
@@ -317,7 +388,7 @@
 <body>
   <div class="app">
     <aside class="panel">
-      <h1>Poukazka B - castka</h1>
+      <h1>Poukazka B</h1>
       <p class="muted">Browser-only sablona. Ted ladime castku i adresata.</p>
 
       <label for="amountInput">Castka (napr. 1234,50)</label>
@@ -349,6 +420,38 @@ Liberec;46001</textarea>
       </div>
 
       <div class="section">
+        <label for="senderInput">Odesilatel (vice radku)</label>
+        <textarea id="senderInput" placeholder="JMENO&#10;ULICE 123&#10;MESTO"></textarea>
+
+        <label for="senderPscInput">PSC odesilatele</label>
+        <input id="senderPscInput" placeholder="12345" />
+      </div>
+
+      <div class="section">
+        <label for="variableSymbolInput">Variabilni symbol</label>
+        <input id="variableSymbolInput" placeholder="1234567890" />
+
+        <label for="specificSymbolInput">Specificky symbol</label>
+        <input id="specificSymbolInput" placeholder="1234567890" />
+      </div>
+
+      <div class="section">
+        <label for="senderAccountInput">Ucet odesilatele (vlevo)</label>
+        <input id="senderAccountInput" placeholder="123456789/0100" />
+
+        <label for="recipientAccountInput">Ucet prijemce (vpravo boxiky)</label>
+        <input id="recipientAccountInput" placeholder="1234567890" />
+
+        <label for="recipientBankCodeInput">Kod banky prijemce (boxiky)</label>
+        <input id="recipientBankCodeInput" placeholder="0100" />
+      </div>
+
+      <div class="section">
+        <label for="messageInput">Zprava pro adresata (2 radky)</label>
+        <textarea id="messageInput" rows="3" placeholder="PRVNI RADEK&#10;DRUHY RADEK"></textarea>
+      </div>
+
+      <div class="section">
         <button type="button" class="toggle" id="togglePositioning" aria-expanded="true" aria-controls="positioningControls">
           <span>Pozicovani poli</span>
           <span class="chevron" aria-hidden="true"></span>
@@ -359,6 +462,10 @@ Liberec;46001</textarea>
         <div class="segment" role="group" aria-label="Vyber pozicovani">
           <button type="button" id="segmentAmount" aria-pressed="true">Pozicovani castky</button>
           <button type="button" id="segmentRecipient" aria-pressed="false">Pozicovani adresata</button>
+          <button type="button" id="segmentSender" aria-pressed="false">Pozicovani odesilatele</button>
+          <button type="button" id="segmentSymbols" aria-pressed="false">Pozicovani symbolu</button>
+          <button type="button" id="segmentAccounts" aria-pressed="false">Pozicovani uctu</button>
+          <button type="button" id="segmentMessage" aria-pressed="false">Pozicovani zpravy</button>
         </div>
 
         <div id="positioningAmount">
@@ -370,7 +477,7 @@ Liberec;46001</textarea>
               </div>
               <div>
                 <label for="paperH">Vyska mm</label>
-                <input id="paperH" type="number" step="0.1" value="148" />
+                <input id="paperH" type="number" step="0.1" value="105" />
               </div>
             </div>
 
@@ -489,6 +596,148 @@ Liberec;46001</textarea>
             <input id="recipientPscRightSpacing" type="number" step="0.1" value="4.0" />
           </div>
         </div>
+
+        <div id="positioningSender" hidden>
+          <div class="section">
+            <label>Odesilatel vlevo (X / Y)</label>
+            <div class="grid2">
+              <input id="senderLeftX" type="number" step="0.1" value="14.1" />
+              <input id="senderLeftY" type="number" step="0.1" value="70.1" />
+            </div>
+
+            <label>Font odesilatel vlevo (mm)</label>
+            <input id="senderLeftFont" type="number" step="0.1" value="3.8" />
+
+            <label>Radkovani odesilatel vlevo (mm)</label>
+            <input id="senderLeftLineHeight" type="number" step="0.1" value="6.0" />
+          </div>
+
+          <div class="section">
+            <label>Odesilatel vpravo boxiky (X / Y)</label>
+            <div class="grid2">
+              <input id="senderBoxedX" type="number" step="0.1" value="109.6" />
+              <input id="senderBoxedY" type="number" step="0.1" value="70.1" />
+            </div>
+
+            <label>Font odesilatel vpravo (mm)</label>
+            <input id="senderBoxedFont" type="number" step="0.1" value="3.8" />
+
+            <label>Radkovani odesilatel vpravo (mm)</label>
+            <input id="senderBoxedLineHeight" type="number" step="0.1" value="6.0" />
+
+            <label>Roztec odesilatel vpravo (mm)</label>
+            <input id="senderBoxedSpacing" type="number" step="0.1" value="3.0" />
+          </div>
+
+          <div class="section">
+            <label>PSC odesilatel vlevo (X / Y)</label>
+            <div class="grid2">
+              <input id="senderPscLeftX" type="number" step="0.1" value="14.1" />
+              <input id="senderPscLeftY" type="number" step="0.1" value="90.6" />
+            </div>
+
+            <label>Font PSC odesilatel vlevo (mm)</label>
+            <input id="senderPscLeftFont" type="number" step="0.1" value="4.0" />
+          </div>
+
+          <div class="section">
+            <label>PSC odesilatel vpravo (X / Y)</label>
+            <div class="grid2">
+              <input id="senderPscRightX" type="number" step="0.1" value="166.1" />
+              <input id="senderPscRightY" type="number" step="0.1" value="90.6" />
+            </div>
+
+            <label>Font PSC odesilatel vpravo (mm)</label>
+            <input id="senderPscRightFont" type="number" step="0.1" value="4.0" />
+
+            <label>Roztec PSC odesilatel vpravo (mm)</label>
+            <input id="senderPscRightSpacing" type="number" step="0.1" value="4.0" />
+          </div>
+        </div>
+
+        <div id="positioningSymbols" hidden>
+          <div class="section">
+            <label>Variabilni symbol (X / Y)</label>
+            <div class="grid2">
+              <input id="variableSymbolX" type="number" step="0.1" value="37.0" />
+              <input id="variableSymbolY" type="number" step="0.1" value="75.0" />
+            </div>
+
+            <label>Font variabilni symbol (mm)</label>
+            <input id="variableSymbolFont" type="number" step="0.1" value="3.8" />
+          </div>
+
+          <div class="section">
+            <label>Specificky symbol (X / Y)</label>
+            <div class="grid2">
+              <input id="specificSymbolX" type="number" step="0.1" value="37.0" />
+              <input id="specificSymbolY" type="number" step="0.1" value="82.0" />
+            </div>
+
+            <label>Font specificky symbol (mm)</label>
+            <input id="specificSymbolFont" type="number" step="0.1" value="3.8" />
+          </div>
+        </div>
+
+        <div id="positioningAccounts" hidden>
+          <div class="section">
+            <label>Ucet odesilatele vlevo (X / Y)</label>
+            <div class="grid2">
+              <input id="senderAccountLeftX" type="number" step="0.1" value="14.1" />
+              <input id="senderAccountLeftY" type="number" step="0.1" value="25.0" />
+            </div>
+
+            <label>Font ucet odesilatele vlevo (mm)</label>
+            <input id="senderAccountLeftFont" type="number" step="0.1" value="3.8" />
+          </div>
+
+          <div class="section">
+            <label>Ucet prijemce vpravo boxiky (X / Y)</label>
+            <div class="grid2">
+              <input id="recipientAccountRightX" type="number" step="0.1" value="121.9" />
+              <input id="recipientAccountRightY" type="number" step="0.1" value="25.0" />
+            </div>
+
+            <label>Font ucet prijemce vpravo (mm)</label>
+            <input id="recipientAccountRightFont" type="number" step="0.1" value="3.8" />
+
+            <label>Roztec ucet prijemce vpravo (mm)</label>
+            <input id="recipientAccountRightSpacing" type="number" step="0.1" value="3.0" />
+          </div>
+
+          <div class="section">
+            <label>Kod banky prijemce (X / Y)</label>
+            <div class="grid2">
+              <input id="recipientBankCodeX" type="number" step="0.1" value="166.1" />
+              <input id="recipientBankCodeY" type="number" step="0.1" value="25.0" />
+            </div>
+
+            <label>Font kod banky prijemce (mm)</label>
+            <input id="recipientBankCodeFont" type="number" step="0.1" value="3.8" />
+
+            <label>Roztec kod banky prijemce (mm)</label>
+            <input id="recipientBankCodeSpacing" type="number" step="0.1" value="3.0" />
+          </div>
+        </div>
+
+        <div id="positioningMessage" hidden>
+          <div class="section">
+            <label>Zprava pro adresata boxiky (X / Y)</label>
+            <div class="grid2">
+              <input id="messageBoxedX" type="number" step="0.1" value="109.6" />
+              <input id="messageBoxedY" type="number" step="0.1" value="84.0" />
+            </div>
+
+            <label>Font zprava (mm)</label>
+            <input id="messageBoxedFont" type="number" step="0.1" value="3.8" />
+
+            <label>Radkovani zprava (mm)</label>
+            <input id="messageBoxedLineHeight" type="number" step="0.1" value="6.0" />
+
+            <label>Roztec zprava (mm)</label>
+            <input id="messageBoxedSpacing" type="number" step="0.1" value="3.0" />
+          </div>
+        </div>
       </div>
 
       <div class="section">
@@ -503,6 +752,16 @@ Liberec;46001</textarea>
           <option value="recipientBoxed">adresat vpravo boxiky</option>
           <option value="recipientPscLeft">adresat PSC vlevo</option>
           <option value="recipientPscRight">adresat PSC vpravo</option>
+          <option value="senderLeft">odesilatel vlevo</option>
+          <option value="senderBoxed">odesilatel vpravo boxiky</option>
+          <option value="senderPscLeft">odesilatel PSC vlevo</option>
+          <option value="senderPscRight">odesilatel PSC vpravo</option>
+          <option value="variableSymbol">variabilni symbol</option>
+          <option value="specificSymbol">specificky symbol</option>
+          <option value="senderAccountLeft">ucet odesilatele vlevo</option>
+          <option value="recipientAccountRight">ucet prijemce vpravo boxiky</option>
+          <option value="recipientBankCode">kod banky prijemce</option>
+          <option value="messageBoxed">zprava pro adresata boxiky</option>
         </select>
 
         <div class="row">
@@ -524,6 +783,7 @@ Liberec;46001</textarea>
 
     <main class="sheet-wrap">
       <div class="sheet" id="sheet">
+        <img src="poukazka-b.png" alt="" class="sheet-bg" aria-hidden="true" />
         <div class="field amount-left" id="fLeftKc"></div>
         <div class="field amount-left" id="fLeftH"></div>
 
@@ -534,13 +794,29 @@ Liberec;46001</textarea>
         <div class="field recipient-boxed" id="fRecipientBoxed"></div>
         <div class="field recipient-psc-left" id="fRecipientPscLeft"></div>
         <div class="field recipient-psc-right" id="fRecipientPscRight"></div>
+
+        <div class="field sender-left" id="fSenderLeft"></div>
+        <div class="field sender-boxed" id="fSenderBoxed"></div>
+        <div class="field sender-psc-left" id="fSenderPscLeft"></div>
+        <div class="field sender-psc-right" id="fSenderPscRight"></div>
+
+        <div class="field symbol-field" id="fVariableSymbol"></div>
+        <div class="field symbol-field" id="fSpecificSymbol"></div>
+        <div class="field account-left" id="fSenderAccountLeft"></div>
+        <div class="field account-boxed" id="fRecipientAccountRight"></div>
+        <div class="field account-boxed" id="fRecipientBankCode"></div>
+        <div class="field message-boxed" id="fMessageBoxed"></div>
       </div>
     </main>
   </div>
 
   <script>
     const ids = [
-      "amountInput", "recipientInput", "recipientPscInput", "pscPresetList", "paperW", "paperH", "dx", "dy",
+      "amountInput", "recipientInput", "recipientPscInput", "senderInput", "senderPscInput",
+      "variableSymbolInput", "specificSymbolInput",
+      "senderAccountInput", "recipientAccountInput", "recipientBankCodeInput",
+      "messageInput",
+      "pscPresetList", "paperW", "paperH", "dx", "dy",
       "leftKcX", "leftKcY", "leftHX", "leftHY", "leftFont",
       "rightKcX", "rightKcY", "kcBoxes", "rightStep",
       "rightHX", "rightHY", "rightFont",
@@ -550,6 +826,18 @@ Liberec;46001</textarea>
       "recipientBoxedFont", "recipientBoxedLineHeight", "recipientBoxedSpacing",
       "recipientPscLeftX", "recipientPscLeftY", "recipientPscLeftFont",
       "recipientPscRightX", "recipientPscRightY", "recipientPscRightFont", "recipientPscRightSpacing",
+      "senderLeftX", "senderLeftY",
+      "senderLeftFont", "senderLeftLineHeight",
+      "senderBoxedX", "senderBoxedY",
+      "senderBoxedFont", "senderBoxedLineHeight", "senderBoxedSpacing",
+      "senderPscLeftX", "senderPscLeftY", "senderPscLeftFont",
+      "senderPscRightX", "senderPscRightY", "senderPscRightFont", "senderPscRightSpacing",
+      "variableSymbolX", "variableSymbolY", "variableSymbolFont",
+      "specificSymbolX", "specificSymbolY", "specificSymbolFont",
+      "senderAccountLeftX", "senderAccountLeftY", "senderAccountLeftFont",
+      "recipientAccountRightX", "recipientAccountRightY", "recipientAccountRightFont", "recipientAccountRightSpacing",
+      "recipientBankCodeX", "recipientBankCodeY", "recipientBankCodeFont", "recipientBankCodeSpacing",
+      "messageBoxedX", "messageBoxedY", "messageBoxedFont", "messageBoxedLineHeight", "messageBoxedSpacing",
       "anchor"
     ];
 
@@ -565,8 +853,16 @@ Liberec;46001</textarea>
     const positioningControls = document.getElementById("positioningControls");
     const segmentAmount = document.getElementById("segmentAmount");
     const segmentRecipient = document.getElementById("segmentRecipient");
+    const segmentSender = document.getElementById("segmentSender");
+    const segmentSymbols = document.getElementById("segmentSymbols");
+    const segmentAccounts = document.getElementById("segmentAccounts");
+    const segmentMessage = document.getElementById("segmentMessage");
     const positioningAmount = document.getElementById("positioningAmount");
     const positioningRecipient = document.getElementById("positioningRecipient");
+    const positioningSender = document.getElementById("positioningSender");
+    const positioningSymbols = document.getElementById("positioningSymbols");
+    const positioningAccounts = document.getElementById("positioningAccounts");
+    const positioningMessage = document.getElementById("positioningMessage");
     const pscCityQuery = document.getElementById("pscCityQuery");
     const pscSuggestions = document.getElementById("pscSuggestions");
 
@@ -650,17 +946,52 @@ Liberec;46001</textarea>
 
     function setPositioningSection(section) {
       const isAmount = section === "amount";
+      const isRecipient = section === "recipient";
+      const isSender = section === "sender";
+      const isSymbols = section === "symbols";
+      const isAccounts = section === "accounts";
+      const isMessage = section === "message";
+
       positioningAmount.hidden = !isAmount;
-      positioningRecipient.hidden = isAmount;
+      positioningRecipient.hidden = !isRecipient;
+      positioningSender.hidden = !isSender;
+      positioningSymbols.hidden = !isSymbols;
+      positioningAccounts.hidden = !isAccounts;
+      positioningMessage.hidden = !isMessage;
+
       segmentAmount.classList.toggle("active", isAmount);
-      segmentRecipient.classList.toggle("active", !isAmount);
+      segmentRecipient.classList.toggle("active", isRecipient);
+      segmentSender.classList.toggle("active", isSender);
+      segmentSymbols.classList.toggle("active", isSymbols);
+      segmentAccounts.classList.toggle("active", isAccounts);
+      segmentMessage.classList.toggle("active", isMessage);
       segmentAmount.setAttribute("aria-pressed", String(isAmount));
-      segmentRecipient.setAttribute("aria-pressed", String(!isAmount));
+      segmentRecipient.setAttribute("aria-pressed", String(isRecipient));
+      segmentSender.setAttribute("aria-pressed", String(isSender));
+      segmentSymbols.setAttribute("aria-pressed", String(isSymbols));
+      segmentAccounts.setAttribute("aria-pressed", String(isAccounts));
+      segmentMessage.setAttribute("aria-pressed", String(isMessage));
     }
 
     function loadPositioningSection() {
       try {
         const saved = localStorage.getItem(POSITIONING_SECTION_KEY);
+        if (saved === "message") {
+          setPositioningSection("message");
+          return;
+        }
+        if (saved === "accounts") {
+          setPositioningSection("accounts");
+          return;
+        }
+        if (saved === "symbols") {
+          setPositioningSection("symbols");
+          return;
+        }
+        if (saved === "sender") {
+          setPositioningSection("sender");
+          return;
+        }
         if (saved === "recipient") {
           setPositioningSection("recipient");
           return;
@@ -799,6 +1130,10 @@ Liberec;46001</textarea>
       return lines.join("\n");
     }
 
+    function formatSingleLine(s, maxChars = 40) {
+      return upperLines(s).replace(/\n/g, " ").trim().slice(0, maxChars);
+    }
+
 
     function parseAmount(raw) {
       const cleaned = String(raw || "")
@@ -842,7 +1177,7 @@ Liberec;46001</textarea>
 
     function render() {
       document.documentElement.style.setProperty("--paper-w", asNumber(el.paperW, 210) + "mm");
-      document.documentElement.style.setProperty("--paper-h", asNumber(el.paperH, 148) + "mm");
+      document.documentElement.style.setProperty("--paper-h", asNumber(el.paperH, 105) + "mm");
       document.documentElement.style.setProperty("--dx", asNumber(el.dx, 0) + "mm");
       document.documentElement.style.setProperty("--dy", asNumber(el.dy, 0) + "mm");
 
@@ -862,6 +1197,16 @@ Liberec;46001</textarea>
       const fRecipientBoxed = document.getElementById("fRecipientBoxed");
       const fRecipientPscLeft = document.getElementById("fRecipientPscLeft");
       const fRecipientPscRight = document.getElementById("fRecipientPscRight");
+      const fSenderLeft = document.getElementById("fSenderLeft");
+      const fSenderBoxed = document.getElementById("fSenderBoxed");
+      const fSenderPscLeft = document.getElementById("fSenderPscLeft");
+      const fSenderPscRight = document.getElementById("fSenderPscRight");
+      const fVariableSymbol = document.getElementById("fVariableSymbol");
+      const fSpecificSymbol = document.getElementById("fSpecificSymbol");
+      const fSenderAccountLeft = document.getElementById("fSenderAccountLeft");
+      const fRecipientAccountRight = document.getElementById("fRecipientAccountRight");
+      const fRecipientBankCode = document.getElementById("fRecipientBankCode");
+      const fMessageBoxed = document.getElementById("fMessageBoxed");
 
       setPos(fLeftKc, asNumber(el.leftKcX, 62), asNumber(el.leftKcY, 53));
       setPos(fLeftH, asNumber(el.leftHX, 79.8), asNumber(el.leftHY, 53));
@@ -871,6 +1216,16 @@ Liberec;46001</textarea>
       setPos(fRecipientBoxed, asNumber(el.recipientBoxedX, 109.6), asNumber(el.recipientBoxedY, 43.1));
       setPos(fRecipientPscLeft, asNumber(el.recipientPscLeftX, 14.1), asNumber(el.recipientPscLeftY, 63.6));
       setPos(fRecipientPscRight, asNumber(el.recipientPscRightX, 166.1), asNumber(el.recipientPscRightY, 63.6));
+      setPos(fSenderLeft, asNumber(el.senderLeftX, 14.1), asNumber(el.senderLeftY, 70.1));
+      setPos(fSenderBoxed, asNumber(el.senderBoxedX, 109.6), asNumber(el.senderBoxedY, 70.1));
+      setPos(fSenderPscLeft, asNumber(el.senderPscLeftX, 14.1), asNumber(el.senderPscLeftY, 90.6));
+      setPos(fSenderPscRight, asNumber(el.senderPscRightX, 166.1), asNumber(el.senderPscRightY, 90.6));
+      setPos(fVariableSymbol, asNumber(el.variableSymbolX, 37.0), asNumber(el.variableSymbolY, 75.0));
+      setPos(fSpecificSymbol, asNumber(el.specificSymbolX, 37.0), asNumber(el.specificSymbolY, 82.0));
+      setPos(fSenderAccountLeft, asNumber(el.senderAccountLeftX, 14.1), asNumber(el.senderAccountLeftY, 25.0));
+      setPos(fRecipientAccountRight, asNumber(el.recipientAccountRightX, 121.9), asNumber(el.recipientAccountRightY, 25.0));
+      setPos(fRecipientBankCode, asNumber(el.recipientBankCodeX, 166.1), asNumber(el.recipientBankCodeY, 25.0));
+      setPos(fMessageBoxed, asNumber(el.messageBoxedX, 109.6), asNumber(el.messageBoxedY, 84.0));
 
       fLeftKc.style.fontSize = leftFont + "mm";
       fLeftH.style.fontSize = leftFont + "mm";
@@ -888,6 +1243,24 @@ Liberec;46001</textarea>
       const recipientPscLeftFont = asNumber(el.recipientPscLeftFont, 4.0);
       const recipientPscRightFont = asNumber(el.recipientPscRightFont, 4.0);
       const recipientPscRightSpacing = asNumber(el.recipientPscRightSpacing, 4.0);
+      const senderLeftFont = asNumber(el.senderLeftFont, 3.8);
+      const senderLeftLineHeight = asNumber(el.senderLeftLineHeight, 6.0);
+      const senderBoxedFont = asNumber(el.senderBoxedFont, 3.8);
+      const senderBoxedLineHeight = asNumber(el.senderBoxedLineHeight, 6.0);
+      const senderBoxedSpacing = asNumber(el.senderBoxedSpacing, 3.0);
+      const senderPscLeftFont = asNumber(el.senderPscLeftFont, 4.0);
+      const senderPscRightFont = asNumber(el.senderPscRightFont, 4.0);
+      const senderPscRightSpacing = asNumber(el.senderPscRightSpacing, 4.0);
+      const variableSymbolFont = asNumber(el.variableSymbolFont, 3.8);
+      const specificSymbolFont = asNumber(el.specificSymbolFont, 3.8);
+      const senderAccountLeftFont = asNumber(el.senderAccountLeftFont, 3.8);
+      const recipientAccountRightFont = asNumber(el.recipientAccountRightFont, 3.8);
+      const recipientAccountRightSpacing = asNumber(el.recipientAccountRightSpacing, 3.0);
+      const recipientBankCodeFont = asNumber(el.recipientBankCodeFont, 3.8);
+      const recipientBankCodeSpacing = asNumber(el.recipientBankCodeSpacing, 3.0);
+      const messageBoxedFont = asNumber(el.messageBoxedFont, 3.8);
+      const messageBoxedLineHeight = asNumber(el.messageBoxedLineHeight, 6.0);
+      const messageBoxedSpacing = asNumber(el.messageBoxedSpacing, 3.0);
 
       fRecipientLeft.style.fontSize = recipientLeftFont + "mm";
       fRecipientLeft.style.lineHeight = recipientLeftLineHeight + "mm";
@@ -897,6 +1270,24 @@ Liberec;46001</textarea>
       fRecipientPscLeft.style.fontSize = recipientPscLeftFont + "mm";
       fRecipientPscRight.style.fontSize = recipientPscRightFont + "mm";
       fRecipientPscRight.style.letterSpacing = recipientPscRightSpacing + "mm";
+      fSenderLeft.style.fontSize = senderLeftFont + "mm";
+      fSenderLeft.style.lineHeight = senderLeftLineHeight + "mm";
+      fSenderBoxed.style.fontSize = senderBoxedFont + "mm";
+      fSenderBoxed.style.lineHeight = senderBoxedLineHeight + "mm";
+      fSenderBoxed.style.letterSpacing = senderBoxedSpacing + "mm";
+      fSenderPscLeft.style.fontSize = senderPscLeftFont + "mm";
+      fSenderPscRight.style.fontSize = senderPscRightFont + "mm";
+      fSenderPscRight.style.letterSpacing = senderPscRightSpacing + "mm";
+      fVariableSymbol.style.fontSize = variableSymbolFont + "mm";
+      fSpecificSymbol.style.fontSize = specificSymbolFont + "mm";
+      fSenderAccountLeft.style.fontSize = senderAccountLeftFont + "mm";
+      fRecipientAccountRight.style.fontSize = recipientAccountRightFont + "mm";
+      fRecipientAccountRight.style.letterSpacing = recipientAccountRightSpacing + "mm";
+      fRecipientBankCode.style.fontSize = recipientBankCodeFont + "mm";
+      fRecipientBankCode.style.letterSpacing = recipientBankCodeSpacing + "mm";
+      fMessageBoxed.style.fontSize = messageBoxedFont + "mm";
+      fMessageBoxed.style.lineHeight = messageBoxedLineHeight + "mm";
+      fMessageBoxed.style.letterSpacing = messageBoxedSpacing + "mm";
 
       const recipientRaw = el.recipientInput.value;
       fRecipientLeft.textContent = formatPlainLines(recipientRaw, 5);
@@ -904,6 +1295,18 @@ Liberec;46001</textarea>
       const recipientPsc = String(el.recipientPscInput.value || "").replace(/\D/g, "").slice(0, 5);
       fRecipientPscLeft.textContent = recipientPsc;
       fRecipientPscRight.textContent = recipientPsc;
+      const senderRaw = el.senderInput.value;
+      fSenderLeft.textContent = formatPlainLines(senderRaw, 5);
+      fSenderBoxed.textContent = formatBoxedText(senderRaw, 30, 5);
+      const senderPsc = String(el.senderPscInput.value || "").replace(/\D/g, "").slice(0, 5);
+      fSenderPscLeft.textContent = senderPsc;
+      fSenderPscRight.textContent = senderPsc;
+      fVariableSymbol.textContent = formatSingleLine(el.variableSymbolInput.value, 20);
+      fSpecificSymbol.textContent = formatSingleLine(el.specificSymbolInput.value, 20);
+      fSenderAccountLeft.textContent = formatSingleLine(el.senderAccountInput.value, 24);
+      fRecipientAccountRight.textContent = formatSingleLine(el.recipientAccountInput.value, 24);
+      fRecipientBankCode.textContent = formatSingleLine(el.recipientBankCodeInput.value, 10);
+      fMessageBoxed.textContent = formatBoxedText(el.messageInput.value, 30, 2);
 
       if (padded.overflow) {
         statusEl.innerHTML = "<span class='warn'>Pozor:</span> castka ma vice cifer nez pocet boxu Kc, tisknou se jen posledni cifry.";
@@ -968,6 +1371,38 @@ Liberec;46001</textarea>
         // ignore storage errors
       }
     });
+    segmentSender.addEventListener("click", () => {
+      setPositioningSection("sender");
+      try {
+        localStorage.setItem(POSITIONING_SECTION_KEY, "sender");
+      } catch (err) {
+        // ignore storage errors
+      }
+    });
+    segmentSymbols.addEventListener("click", () => {
+      setPositioningSection("symbols");
+      try {
+        localStorage.setItem(POSITIONING_SECTION_KEY, "symbols");
+      } catch (err) {
+        // ignore storage errors
+      }
+    });
+    segmentAccounts.addEventListener("click", () => {
+      setPositioningSection("accounts");
+      try {
+        localStorage.setItem(POSITIONING_SECTION_KEY, "accounts");
+      } catch (err) {
+        // ignore storage errors
+      }
+    });
+    segmentMessage.addEventListener("click", () => {
+      setPositioningSection("message");
+      try {
+        localStorage.setItem(POSITIONING_SECTION_KEY, "message");
+      } catch (err) {
+        // ignore storage errors
+      }
+    });
 
     importFile.addEventListener("change", async (event) => {
       const file = event.target.files && event.target.files[0];
@@ -989,7 +1424,7 @@ Liberec;46001</textarea>
 
       const rect = sheet.getBoundingClientRect();
       const xMm = ((event.clientX - rect.left) / rect.width) * asNumber(el.paperW, 210);
-      const yMm = ((event.clientY - rect.top) / rect.height) * asNumber(el.paperH, 148);
+      const yMm = ((event.clientY - rect.top) / rect.height) * asNumber(el.paperH, 105);
 
       const x = xMm.toFixed(2);
       const y = yMm.toFixed(2);
@@ -1002,6 +1437,16 @@ Liberec;46001</textarea>
       if (target === "recipientBoxed") { el.recipientBoxedX.value = x; el.recipientBoxedY.value = y; }
       if (target === "recipientPscLeft") { el.recipientPscLeftX.value = x; el.recipientPscLeftY.value = y; }
       if (target === "recipientPscRight") { el.recipientPscRightX.value = x; el.recipientPscRightY.value = y; }
+      if (target === "senderLeft") { el.senderLeftX.value = x; el.senderLeftY.value = y; }
+      if (target === "senderBoxed") { el.senderBoxedX.value = x; el.senderBoxedY.value = y; }
+      if (target === "senderPscLeft") { el.senderPscLeftX.value = x; el.senderPscLeftY.value = y; }
+      if (target === "senderPscRight") { el.senderPscRightX.value = x; el.senderPscRightY.value = y; }
+      if (target === "variableSymbol") { el.variableSymbolX.value = x; el.variableSymbolY.value = y; }
+      if (target === "specificSymbol") { el.specificSymbolX.value = x; el.specificSymbolY.value = y; }
+      if (target === "senderAccountLeft") { el.senderAccountLeftX.value = x; el.senderAccountLeftY.value = y; }
+      if (target === "recipientAccountRight") { el.recipientAccountRightX.value = x; el.recipientAccountRightY.value = y; }
+      if (target === "recipientBankCode") { el.recipientBankCodeX.value = x; el.recipientBankCodeY.value = y; }
+      if (target === "messageBoxed") { el.messageBoxedX.value = x; el.messageBoxedY.value = y; }
 
       render();
       saveSettingsToLocal();
