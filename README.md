@@ -63,9 +63,20 @@ Stačí ho uložit do rootu projektu pod stejným názvem `poukazka-b.png`.
 
 - Tisk je posunutý: zkontrolujte měřítko na 100 %.
 - Formular nesedí na stránce: vypněte volbu typu "fit to page" / "přizpůsobit stránce".
+- Výška výtisku nesedí: do pole **Naměřená výška tisku mm** zadejte skutečnou vytištěnou výšku. Pokud výtisk měří 150 mm a má mít 101 mm, zadejte `150`; aplikace při tisku zmenší jen svislou osu.
 - Jiný výsledek mezi prohlížeči: dolaďte pozice v prohlížeči, ze kterého budete skutečně tisknout.
 - Rozpadlé znaky v boxících: upravte font/rozteč v příslušné pozicovací sekci.
 - Nastavení zmizelo: ověřte, že je v prohlížeči povolené lokální úložiště, případně používejte Export JSON jako zálohu.
+
+## Validace tiskového layoutu do PDF
+
+Pro kontrolu, že se text při tisku na prázdný formulář neposune oproti tisku s podkladem, spusťte:
+
+```bash
+./scripts/validate-print-layout.sh
+```
+
+Skript vygeneruje PDF přes headless Chrome, převede je na PNG pomocí `sips` a porovná textové pozice. Výstupy ukládá do `/tmp/postovni-poukazka-print-validation`.
 
 ## Struktura projektu
 

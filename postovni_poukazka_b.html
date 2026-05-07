@@ -7,9 +7,10 @@
   <style>
     :root {
       --paper-w: 210mm;
-      --paper-h: 105mm;
+      --paper-h: 101mm;
       --dx: 0mm;
       --dy: 0mm;
+      --print-y-scale: 1;
     }
 
     * { box-sizing: border-box; }
@@ -75,6 +76,11 @@
       background: #fff;
     }
 
+    input[type="checkbox"] {
+      width: auto;
+      padding: 0;
+    }
+
     textarea {
       min-height: 96px;
       resize: vertical;
@@ -118,6 +124,21 @@
 
     .toggle:hover {
       background: #edf2ff;
+    }
+
+    .checkbox-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      margin-top: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #2b3857;
+    }
+
+    .checkbox-row input {
+      margin-top: 2px;
+      flex: 0 0 auto;
     }
 
     .toggle .chevron {
@@ -341,6 +362,10 @@
       outline: 1px dashed rgba(30, 136, 229, 0.55);
     }
 
+    body.hide-print-text .field {
+      visibility: hidden;
+    }
+
     .info {
       margin-top: 8px;
       font-size: 12px;
@@ -363,20 +388,40 @@
     }
 
     @media print {
-      body { margin: 0; background: #fff; }
+      html,
+      body {
+        width: 210mm;
+        height: 297mm;
+        margin: 0;
+        background: #fff;
+      }
       .panel { display: none; }
-      .app { display: block; padding: 0; }
+      .app {
+        display: block;
+        width: 210mm;
+        height: 297mm;
+        min-height: 0;
+        padding: 0;
+      }
       .sheet-wrap {
+        width: var(--paper-w);
+        height: var(--paper-h);
+        overflow: visible;
         border: 0;
         border-radius: 0;
         padding: 0;
         background: #fff;
-        display: flex;
-        justify-content: center;
       }
       .sheet {
+        width: var(--paper-w);
+        height: var(--paper-h);
         border: 0;
         margin: 0;
+        transform: scaleY(var(--print-y-scale));
+        transform-origin: top left;
+      }
+      body.print-blank-form .sheet-bg {
+        visibility: hidden;
       }
       @page {
         size: A4 portrait;
@@ -477,7 +522,7 @@ Liberec;46001</textarea>
               </div>
               <div>
                 <label for="paperH">Vyska mm</label>
-                <input id="paperH" type="number" step="0.1" value="105" />
+                <input id="paperH" type="number" step="0.1" value="101" />
               </div>
             </div>
 
@@ -764,6 +809,23 @@ Liberec;46001</textarea>
           <option value="messageBoxed">zprava pro adresata boxiky</option>
         </select>
 
+        <label class="checkbox-row" for="printBlankForm">
+          <input id="printBlankForm" type="checkbox" />
+          <span>Vytisknout na prázdný formulář</span>
+        </label>
+
+        <div class="grid2">
+          <div>
+            <label for="measuredPrintH">Namerena vyska tisku mm</label>
+            <input id="measuredPrintH" type="number" step="0.1" value="101" />
+          </div>
+          <div>
+            <label for="targetPrintH">Cilova vyska tisku mm</label>
+            <input id="targetPrintH" type="number" step="0.1" value="101" />
+          </div>
+        </div>
+        <p class="info">Kdyz vytisk meri napr. 150 mm, zadej 150. Aplikace pri tisku zmensi jen vysku.</p>
+
         <div class="row">
           <button type="button" class="primary" id="printBtn">Tisk</button>
           <button type="button" id="debugBtn">Debug</button>
@@ -838,7 +900,7 @@ Liberec;46001</textarea>
       "recipientAccountRightX", "recipientAccountRightY", "recipientAccountRightFont", "recipientAccountRightSpacing",
       "recipientBankCodeX", "recipientBankCodeY", "recipientBankCodeFont", "recipientBankCodeSpacing",
       "messageBoxedX", "messageBoxedY", "messageBoxedFont", "messageBoxedLineHeight", "messageBoxedSpacing",
-      "anchor"
+      "anchor", "printBlankForm", "measuredPrintH", "targetPrintH"
     ];
 
     const el = {};
@@ -870,6 +932,45 @@ Liberec;46001</textarea>
     const POSITIONING_TOGGLE_KEY = "poukazkaB_castka_positioning_open_v1";
     const POSITIONING_SECTION_KEY = "poukazkaB_castka_positioning_section_v1";
 
+    function isEnabledParam(params, name) {
+      if (!params.has(name)) return false;
+      const value = params.get(name);
+      return value !== "0" && value !== "false";
+    }
+
+    function applyUrlPrintOptions() {
+      const params = new URLSearchParams(window.location.search);
+      const hasValidation = isEnabledParam(params, "validation");
+      const hasPrintBlank = params.has("printBlank");
+      const hasHideText = params.has("hideText");
+
+      if (hasValidation) {
+        el.amountInput.value = "1234,50";
+        el.recipientInput.value = "JAN NOVAK\nDLOUHA 123\n11000 PRAHA 1";
+        el.recipientPscInput.value = "11000";
+        el.senderInput.value = "PETR SVOBODA\nKRATKA 45\n60200 BRNO";
+        el.senderPscInput.value = "60200";
+        el.variableSymbolInput.value = "1234567890";
+        el.specificSymbolInput.value = "9876543210";
+        el.senderAccountInput.value = "123456789/0100";
+        el.recipientAccountInput.value = "9876543210";
+        el.recipientBankCodeInput.value = "0800";
+        el.messageInput.value = "VALIDACNI TISK\nKONTROLA POZIC";
+        el.measuredPrintH.value = "101";
+        el.targetPrintH.value = "101";
+      }
+
+      if (hasPrintBlank) {
+        el.printBlankForm.checked = isEnabledParam(params, "printBlank");
+      }
+
+      if (hasHideText) {
+        document.body.classList.toggle("hide-print-text", isEnabledParam(params, "hideText"));
+      }
+
+      return hasValidation || hasPrintBlank || hasHideText;
+    }
+
     function asNumber(input, fallback) {
       const n = Number(input.value);
       return Number.isFinite(n) ? n : fallback;
@@ -883,14 +984,20 @@ Liberec;46001</textarea>
 
     function getSettingsFields() {
       const fields = {};
-      ids.forEach((id) => { fields[id] = el[id].value; });
+      ids.forEach((id) => {
+        fields[id] = el[id].type === "checkbox" ? el[id].checked : el[id].value;
+      });
       return fields;
     }
 
     function applySettingsFields(fields) {
       ids.forEach((id) => {
         if (Object.prototype.hasOwnProperty.call(fields, id)) {
-          el[id].value = String(fields[id]);
+          if (el[id].type === "checkbox") {
+            el[id].checked = fields[id] === true || fields[id] === "true" || fields[id] === "1";
+          } else {
+            el[id].value = String(fields[id]);
+          }
         }
       });
     }
@@ -1176,10 +1283,16 @@ Liberec;46001</textarea>
     }
 
     function render() {
-      document.documentElement.style.setProperty("--paper-w", asNumber(el.paperW, 210) + "mm");
-      document.documentElement.style.setProperty("--paper-h", asNumber(el.paperH, 105) + "mm");
+      const paperW = asNumber(el.paperW, 210);
+      const paperH = asNumber(el.paperH, 101);
+      document.documentElement.style.setProperty("--paper-w", paperW + "mm");
+      document.documentElement.style.setProperty("--paper-h", paperH + "mm");
       document.documentElement.style.setProperty("--dx", asNumber(el.dx, 0) + "mm");
       document.documentElement.style.setProperty("--dy", asNumber(el.dy, 0) + "mm");
+      const measuredPrintH = Math.max(1, asNumber(el.measuredPrintH, paperH));
+      const targetPrintH = Math.max(1, asNumber(el.targetPrintH, paperH));
+      document.documentElement.style.setProperty("--print-y-scale", targetPrintH / measuredPrintH);
+      document.body.classList.toggle("print-blank-form", el.printBlankForm.checked);
 
       const amount = parseAmount(el.amountInput.value);
       const kcBoxes = Math.max(1, Math.floor(asNumber(el.kcBoxes, 7)));
@@ -1424,7 +1537,7 @@ Liberec;46001</textarea>
 
       const rect = sheet.getBoundingClientRect();
       const xMm = ((event.clientX - rect.left) / rect.width) * asNumber(el.paperW, 210);
-      const yMm = ((event.clientY - rect.top) / rect.height) * asNumber(el.paperH, 105);
+      const yMm = ((event.clientY - rect.top) / rect.height) * asNumber(el.paperH, 101);
 
       const x = xMm.toFixed(2);
       const y = yMm.toFixed(2);
@@ -1455,8 +1568,9 @@ Liberec;46001</textarea>
     loadPositioningSection();
     loadPositioningState();
     loadSettingsFromLocal();
+    const hasUrlPrintOptions = applyUrlPrintOptions();
     render();
-    saveSettingsToLocal();
+    if (!hasUrlPrintOptions) saveSettingsToLocal();
     renderPscSuggestions();
   </script>
 </body>
